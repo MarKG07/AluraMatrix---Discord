@@ -35,7 +35,7 @@ function Titulo(props) {
 
 // export default HomePage
 
-export default function PaginaInicial() {
+export default function PaginaInicial(props) {
   // const username = 'MarKG07';
   // const username = 'JOSINALDOVIANA';
   const [username, SetUsername] = React.useState('MarKG07');

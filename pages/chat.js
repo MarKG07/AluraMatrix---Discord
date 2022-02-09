@@ -1,6 +1,12 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0NDI2NDE2NiwiZXhwIjoxOTU5ODQwMTY2fQ.jd46rbE2g-JYwUGLXrcRzlp7E5OSbRFOnsaYp5EgUis';
+const SUPABASE_URL = 'https://clyhqnhseuwvmsvpnfzw.supabase.co';
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
 
 export default function ChatPage() {
     // Sua lógica vai aqui
@@ -12,22 +18,54 @@ export default function ChatPage() {
     //campo criado
     //usar o onChange, useState, if pra saber se o último caractere é o Enter
     // ./Sua lógica vai aqui
-
+    
     const [mensagem, SetMensagem] = React.useState('');
     const [listaMensagens, SetListaMensagens] = React.useState([]);
 
+    React.useEffect(() => {
+        supabaseClient
+            .from('mensagens')
+            .select('*')
+            .order('id', {ascending:false}) //traz as msgs na ordem correta
+            .then(({ data }) => {
+                console.log('dados da consulta: ', data)
+                SetListaMensagens(data);
+            });
+    }, []); //executa quando o que tiver dentro do array mudar
+
     function handleNovaMensagem(novamsg) {
         const msgObjeto = {
-            id: listaMensagens.length + 1,
+            //id: listaMensagens.length + 1,
             de: 'MarKG07',
             mensagem: novamsg
         }
-        SetListaMensagens([
-            msgObjeto,
-            ...listaMensagens
+        supabaseClient
+        .from('mensagens')
+        .insert([
+            msgObjeto
         ])
-    }
+        .then(({data}) => {
+            console.log('criando msg: ', data)
+            SetListaMensagens([
+                data[0],
+                ...listaMensagens
+            ])
 
+        })
+        SetMensagem('');
+    }
+    
+    // function handleNovaMensagem(novamsg) {
+    //     const msgObjeto = {
+    //         id: listaMensagens.length + 1,
+    //         de: 'MarKG07',
+    //         mensagem: novamsg
+    //     }
+    //     SetListaMensagens([
+    //         msgObjeto,
+    //         ...listaMensagens
+    //     ])
+    // }
     return (
         <Box
             styleSheet={{
@@ -92,7 +130,7 @@ export default function ChatPage() {
                                     handleNovaMensagem(mensagem); //chama a função
                                 }
 
-                            }}//Verfica com detalhes as teclas que estão sendo clicadas
+                            }} //Verfica com detalhes as teclas que estão sendo clicadas
                             placeholder="Insira sua mensagem aqui..."
                             type="textarea"
                             styleSheet={{
@@ -186,7 +224,7 @@ function MessageList(props) {
                                     display: 'inline-block',
                                     marginRight: '8px',
                                 }}
-                                src={`https://github.com/MarKG07.png`}
+                                src={`https://github.com/${mensagens.de}.png`}
                             />
                             <Text tag="strong">
                                 {mensagens.de}
